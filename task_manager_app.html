@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Task Manager</title>
+    <style>
+        /* CSS Reset - Makes sure our app looks the same across all browsers */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styling - This affects the entire page */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main container - This holds our entire app */
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Header styling */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Input section styling */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .task-input:focus {
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Filter buttons styling */
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 2px solid #e1e1e1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active:hover {
+            color: white;
+        }
+
+        /* Task list styling */
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            background: #e8f5e8;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .task-text {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* Task counter */
+        .task-counter {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive design for mobile phones */
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .input-section {
+                flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-wrap: wrap;
+            }
+            
+            .task-item {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- This is our main app container -->
+    <div class="container">
+        <!-- Header section with title and description -->
+        <div class="header">
+            <h1>📝 My Task Manager</h1>
+            <p>Stay organized and get things done!</p>
+        </div>
+
+        <!-- Input section where users type new tasks -->
+        <div class="input-section">
+            <input 
+                type="text" 
+                class="task-input" 
+                placeholder="What do you need to do today?"
+                id="taskInput"
+            >
+            <button class="add-btn" id="addBtn">Add Task</button>
+        </div>
+
+        <!-- Task counter to show how many tasks are left -->
+        <div class="task-counter" id="taskCounter">
+            You have 0 tasks remaining
+        </div>
+
+        <!-- Filter buttons to show different task categories -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">All Tasks</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <!-- This is where all tasks will be displayed -->
+        <ul class="task-list" id="taskList">
+            <!-- Tasks will be added here dynamically with JavaScript -->
+            <div class="empty-state" id="emptyState">
+                <h3>No tasks yet!</h3>
+                <p>Add a task above to get started.</p>
+            </div>
+        </ul>
+    </div>
+
+    <script>
+        // JavaScript starts here - This is where we make our app interactive
+
+        // Step 1: Get references to all the HTML elements we need to work with
+        // Think of this like getting the remote controls for different parts of our app
+        const taskInput = document.getElementById('taskInput');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const taskCounter = document.getElementById('taskCounter');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const emptyState = document.getElementById('emptyState');
+
+        // Step 2: Create an array to store all our tasks
+        // An array is like a list that can grow and shrink
+        let tasks = [];
+
+        // Step 3: Keep track of what filter is currently active
+        let currentFilter = 'all';
+
+        // Step 4: Create a unique ID for each task
+        // This helps us identify specific tasks when we want to delete or modify them
+        let taskIdCounter = 1;
+
+        // Step 5: Function to create a new task object
+        // A function is like a recipe - it takes ingredients (parameters) and makes something
+        function createTask(text) {
+            return {
+                id: taskIdCounter++,           // Unique identifier
+                text: text,                    // The task description
+                completed: false,              // Whether it's done or not
+                createdAt: new Date()          // When it was created
+            };
+        }
+
+        // Step 6: Function to add a new task to our list
+        function addTask() {
+            // Get the text from the input field and remove extra spaces
+            const taskText = taskInput.value.trim();
+            
+            // Check if the user actually typed something
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return; // Stop the function here if no text
+            }
+
+            // Create a new task object and add it to our array
+            const newTask = createTask(taskText);
+            tasks.push(newTask);
+
+            // Clear the input field so user can type a new task
+            taskInput.value = '';
+
+            // Update what's shown on screen
+            renderTasks();
+            updateTaskCounter();
+            
+            // Save to browser's local storage so tasks persist when page reloads
+            saveTasksToStorage();
+        }
+
+        // Step 7: Function to display tasks on the screen
+        function renderTasks() {
+            // Clear the current list
+            taskList.innerHTML = '';
+
+            // Filter tasks based on what the user wants to see
+            let filteredTasks;
+            if (currentFilter === 'active') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            } else {
+                filteredTasks = tasks; // Show all tasks
+            }
+
+            // If no tasks to show, display the empty state
+            if (filteredTasks.length === 0) {
+                if (tasks.length === 0) {
+                    taskList.appendChild(emptyState);
+                } else {
+                    taskList.innerHTML = '<div class="empty-state"><h3>No tasks in this category!</h3></div>';
+                }
+                return;
+            }
+
+            // Create HTML for each task and add it to the list
+            filteredTasks.forEach(task => {
+                const taskItem = createTaskElement(task);
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        // Step 8: Function to create the HTML structure for a single task
+        function createTaskElement(task) {
+            // Create the main container for this task
+            const li = document.createElement('li');
+            li.className = `task-item ${task.completed ? 'completed' : ''}`;
+
+            // Create the HTML content for this task
+            li.innerHTML = `
+                <div class="task-content">
+                    <input 
+                        type="checkbox" 
+                        class="task-checkbox" 
+                        ${task.completed ? 'checked' : ''}
+                        onchange="toggleTask(${task.id})"
+                    >
+                    <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
+                </div>
+                <div class="task-actions">
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+            `;
+
+            return li;
+        }
+
+        // Step 9: Function to toggle a task between completed and not completed
+        function toggleTask(taskId) {
+            // Find the task in our array and flip its completed status
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+                updateTaskCounter();
+                saveTasksToStorage();
+            }
+        }
+
+        // Step 10: Function to delete a task
+        function deleteTask(taskId) {
+            // Remove the task from our array
+            tasks = tasks.filter(t => t.id !== taskId);
+            renderTasks();
+            updateTaskCounter();
+            saveTasksToStorage();
+        }
+
+        // Step 11: Function to update the task counter
+        function updateTaskCounter() {
+            const activeTasks = tasks.filter(task => !task.completed).length;
+            const totalTasks = tasks.length;
+            
+            if (totalTasks === 0) {
+                taskCounter.textContent = 'No tasks yet!';
+            } else if (activeTasks === 0) {
+                taskCounter.textContent = '🎉 All tasks completed!';
+            } else if (activeTasks === 1) {
+                taskCounter.textContent = 'You have 1 task remaining';
+            } else {
+                taskCounter.textContent = `You have ${activeTasks} tasks remaining`;
+            }
+        }
+
+        // Step 12: Function to save tasks to browser's local storage
+        function saveTasksToStorage() {
+            localStorage.setItem('taskManagerTasks', JSON.stringify(tasks));
+        }
+
+        // Step 13: Function to load tasks from browser's local storage
+        function loadTasksFromStorage() {
+            const savedTasks = localStorage.getItem('taskManagerTasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                // Restore the taskIdCounter to avoid duplicate IDs
+                if (tasks.length > 0) {
+                    taskIdCounter = Math.max(...tasks.map(t => t.id)) + 1;
+                }
+                renderTasks();
+                updateTaskCounter();
+            }
+        }
+
+        // Step 14: Event listeners - These "listen" for user actions
+        
+        // When user clicks the Add button
+        addBtn.addEventListener('click', addTask);
+
+        // When user presses Enter in the input field
+        taskInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // When user clicks filter buttons
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update current filter and re-render tasks
+                currentFilter = this.getAttribute('data-filter');
+                renderTasks();
+            });
+        });
+
+        // Step 15: Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTasksFromStorage();
+            console.log('Task Manager App loaded successfully!');
+        });
+    </script>
+</body>
+</html>
